@@ -8,45 +8,27 @@ import requests
 from typing import Optional, Dict, Any, Tuple
 import firebase_admin
 from firebase_admin import credentials, auth, storage, firestore
+import streamlit as st
 
-print("FIREBASE_CREDENTIALS", os.environ.get("FIREBASE_CREDENTIALS"))
-print("FIREBASE_API_KEY", os.environ.get("FIREBASE_API_KEY"))
 # Firebase authentication endpoint
 FIREBASE_AUTH_URL = "https://identitytoolkit.googleapis.com/v1/accounts"
 
-# Global variable to store firebase admin app
-firebase_admin_app = None
 
-
+@st.cache_resource
 def initialize_firebase():
     """
     Initialize Firebase Admin SDK using credentials from environment variable or file.
     """
-    global firebase_admin_app
     cred_path = os.environ.get("FIREBASE_CREDENTIALS", "firebase-credentials.json")
 
     # Check if Firebase Admin is already initialized
     if not firebase_admin._apps:
-        # If credentials are provided as an environment variable (JSON string)
-        if os.environ.get("FIREBASE_CREDENTIALS"):
-            try:
-                cred_dict = json.loads(os.environ.get("FIREBASE_CREDENTIALS", "{}"))
-                cred = credentials.Certificate(cred_dict)
-                firebase_admin_app = firebase_admin.initialize_app(
-                    cred, {"storageBucket": os.environ.get("FIREBASE_STORAGE_BUCKET")}
-                )
-            except Exception as e:
-                print(
-                    f"Error initializing Firebase Admin from environment variable: {e}"
-                )
-                return False
         # If credentials are provided as a file
-        elif os.path.exists(cred_path):
+        print(f"Exists {os.path.exists(cred_path)}")
+        if os.path.exists(cred_path):
+            cred = credentials.Certificate(cred_path)
             try:
-                cred = credentials.Certificate(cred_path)
-                firebase_admin_app = firebase_admin.initialize_app(
-                    cred, {"storageBucket": os.environ.get("FIREBASE_STORAGE_BUCKET")}
-                )
+                firebase_admin.initialize_app(cred)
             except Exception as e:
                 print(f"Error initializing Firebase Admin from file: {e}")
                 return False
@@ -60,6 +42,7 @@ def initialize_firebase():
 def _get_api_key():
     """Get Firebase Web API Key from environment variable"""
     api_key = os.environ.get("FIREBASE_API_KEY")
+    print("API_KEY", api_key)
     if not api_key:
         print("FIREBASE_API_KEY environment variable not set")
         return None
@@ -158,7 +141,7 @@ def authenticate_user(
 
         response = requests.post(signin_url, json=signin_payload)
         data = response.json()
-
+        print(f"Data: {data}")
         if "error" in data:
             error_message = data["error"].get("message", "Authentication failed")
             if error_message == "EMAIL_NOT_FOUND":
@@ -244,71 +227,71 @@ def get_user_by_id(user_id: str) -> Optional[Dict[str, Any]]:
 
 
 # Storage functions
-def upload_file(
-    file_data, file_name: str, content_type: str = None
-) -> Tuple[bool, str, Optional[str]]:
-    """
-    Upload a file to Firebase Storage.
+# def upload_file(
+#     file_data, file_name: str, content_type: str = None
+# ) -> Tuple[bool, str, Optional[str]]:
+#     """
+#     Upload a file to Firebase Storage.
 
-    Args:
-        file_data: File data to upload
-        file_name (str): Name to give the file in storage
-        content_type (str, optional): Content type of the file
+#     Args:
+#         file_data: File data to upload
+#         file_name (str): Name to give the file in storage
+#         content_type (str, optional): Content type of the file
 
-    Returns:
-        Tuple[bool, str, Optional[str]]:
-            - Success status (bool)
-            - Message (str)
-            - Download URL if successful, None otherwise
-    """
-    if not initialize_firebase():
-        return False, "Firebase initialization failed", None
+#     Returns:
+#         Tuple[bool, str, Optional[str]]:
+#             - Success status (bool)
+#             - Message (str)
+#             - Download URL if successful, None otherwise
+#     """
+#     if not initialize_firebase():
+#         return False, "Firebase initialization failed", None
 
-    try:
-        bucket = storage.bucket()
-        blob = bucket.blob(file_name)
+#     try:
+#         bucket = storage.bucket()
+#         blob = bucket.blob(file_name)
 
-        if content_type:
-            blob.content_type = content_type
+#         if content_type:
+#             blob.content_type = content_type
 
-        blob.upload_from_string(file_data)
+#         blob.upload_from_string(file_data)
 
-        # Make the blob publicly accessible
-        blob.make_public()
+#         # Make the blob publicly accessible
+#         blob.make_public()
 
-        return True, "File uploaded successfully", blob.public_url
-    except Exception as e:
-        return False, f"Error uploading file: {str(e)}", None
+#         return True, "File uploaded successfully", blob.public_url
+#     except Exception as e:
+#         return False, f"Error uploading file: {str(e)}", None
 
 
-def download_file(file_name: str) -> Tuple[bool, str, Optional[bytes]]:
-    """
-    Download a file from Firebase Storage.
+# def download_file(file_name: str) -> Tuple[bool, str, Optional[bytes]]:
+#     """
+#     Download a file from Firebase Storage.
 
-    Args:
-        file_name (str): Name of the file in storage
+#     Args:
+#         file_name (str): Name of the file in storage
 
-    Returns:
-        Tuple[bool, str, Optional[bytes]]:
-            - Success status (bool)
-            - Message (str)
-            - File data if successful, None otherwise
-    """
-    if not initialize_firebase():
-        return False, "Firebase initialization failed", None
+#     Returns:
+#         Tuple[bool, str, Optional[bytes]]:
+#             - Success status (bool)
+#             - Message (str)
+#             - File data if successful, None otherwise
+#     """
+#     if not initialize_firebase():
+#         return False, "Firebase initialization failed", None
 
-    try:
-        bucket = storage.bucket()
-        blob = bucket.blob(file_name)
+#     try:
+#         bucket = storage.bucket()
+#         blob = bucket.blob(file_name)
 
-        if not blob.exists():
-            return False, "File not found", None
+#         if not blob.exists():
+#             return False, "File not found", None
 
-        file_data = blob.download_as_bytes()
+#         file_data = blob.download_as_bytes()
 
-        return True, "File downloaded successfully", file_data
-    except Exception as e:
-        return False, f"Error downloading file: {str(e)}", None
+#         return True, "File downloaded successfully", file_data
+#     except Exception as e:
+#         return False, f"Error downloading file: {str(e)}", None
 
 
 # Module and exercise functions
