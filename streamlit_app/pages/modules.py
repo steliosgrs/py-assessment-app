@@ -1,5 +1,5 @@
 """
-Modules page for Streamlit application - displays Python modules & lessons.
+Modules page for Streamlit application - displays Python modules & lessons from local files.
 """
 
 import streamlit as st
@@ -11,7 +11,13 @@ from pathlib import Path
 # Add the project root to the Python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
-from shared.firebase import get_all_modules, get_module_by_id, mark_module_completed
+# Import from local file system instead of Firebase
+from shared.course_loader import (
+    get_all_modules,
+    get_module_by_id,
+    mark_module_completed,
+)
+from shared.firebase import get_user_by_id  # Still need this for user data
 
 # Initialize the session state if not already done
 if "user_id" not in st.session_state:
@@ -27,7 +33,7 @@ def render_markdown(md_content):
 
 
 def load_module_content(module_id):
-    """Load module content from Firestore"""
+    """Load module content from local file system"""
     module = get_module_by_id(module_id)
 
     if not module:
@@ -48,7 +54,7 @@ def load_module_content(module_id):
         if success:
             st.success("Module marked as completed!")
             # Refresh user state if needed
-            st.experimental_rerun()
+            # st.experimental_rerun()
         else:
             st.error("Failed to mark module as completed!")
 
@@ -59,7 +65,7 @@ def load_module_content(module_id):
 
 
 def display_module_list():
-    """Display list of all modules"""
+    """Display list of all modules from local file system"""
     st.title("Python Learning Modules")
 
     modules = get_all_modules()
@@ -96,7 +102,7 @@ def display_module_list():
         with col2:
             if st.button("Open", key=f"open_{module.get('id')}"):
                 st.session_state.selected_module = module.get("id")
-                st.experimental_rerun()
+                # st.experimental_rerun()
 
 
 def main():
@@ -124,7 +130,7 @@ def main():
         if st.session_state.selected_module:
             if st.button("All Modules"):
                 st.session_state.selected_module = None
-                st.experimental_rerun()
+                # st.experimental_rerun()
 
     # Display modules list or specific module
     if st.session_state.selected_module:

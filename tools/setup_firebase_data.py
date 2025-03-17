@@ -1,22 +1,29 @@
 """
-Script to set up initial data in Firebase for modules and exercises.
-Run this script after setting up Firebase to populate sample data.
+Script to set up initial course data in the local filesystem.
+This creates sample modules and exercises.
 """
 
 import os
-import sys
 import json
+import shutil
 from pathlib import Path
+import sys
 
 # Add the project root to the Python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-import firebase_admin
-from firebase_admin import credentials, firestore, storage
+# Import course loader to get directory paths
+from shared.course_loader import (
+    COURSE_DIR,
+    MODULES_DIR,
+    EXERCISES_DIR,
+    ensure_course_directories,
+)
 
 # Sample module data
 SAMPLE_MODULES = [
     {
+        "id": "module1",
         "title": "Introduction to Python",
         "description": "Learn the basics of Python programming language.",
         "order": 1,
@@ -132,6 +139,7 @@ Head over to the exercises section to practice what you've learned!
 """,
     },
     {
+        "id": "module2",
         "title": "Data Structures in Python",
         "description": "Learn about lists, tuples, dictionaries, and sets in Python.",
         "order": 2,
@@ -264,6 +272,7 @@ Try to use these data structures to solve different problems. Head to the exerci
 # Sample exercise data
 SAMPLE_EXERCISES = [
     {
+        "id": "exercise1",
         "title": "Factorial Calculator",
         "description": """
 # Factorial Calculator
@@ -288,26 +297,36 @@ The factorial of a number is the product of all positive integers less than or e
 factorial(5)  # Should return 120
 factorial(0)  # Should return 1
 ```
-
-## Starter Code:
-
-```python
-def factorial(n):
-    # Your code here
-    pass
-```
-
-Submit your solution and it will be automatically tested.
 """,
-        "moduleId": "",  # Will be filled after creating modules
+        "moduleId": "module1",
         "difficulty": "Easy",
         "order": 1,
         "starterCode": """def factorial(n):
     # Your code here
     pass
 """,
+        "testCode": """
+import pytest
+from exercise import factorial
+
+def test_factorial_zero():
+    assert factorial(0) == 1, "Factorial of 0 should be 1"
+    
+def test_factorial_one():
+    assert factorial(1) == 1, "Factorial of 1 should be 1"
+    
+def test_factorial_five():
+    assert factorial(5) == 120, "Factorial of 5 should be 120"
+    
+def test_factorial_ten():
+    assert factorial(10) == 3628800, "Factorial of 10 should be 3628800"
+    
+def test_factorial_negative():
+    assert factorial(-1) is None, "Factorial of negative numbers should return None"
+""",
     },
     {
+        "id": "exercise2",
         "title": "List Operations",
         "description": """
 # List Operations
@@ -332,49 +351,15 @@ Create a function called `process_list` that performs the following operations o
 process_list([3, 1, 4, 1, 5, 9, 2, 6, 5])  # Should return 1 + 9 = 10
 process_list([5, 5, 5, 5])  # Should return 5 + 5 = 10 (after removing duplicates there's only one 5)
 ```
-
-## Starter Code:
-
-```python
-def process_list(numbers):
-    # Your code here
-    pass
-```
-
-Submit your solution and it will be automatically tested.
 """,
-        "moduleId": "",  # Will be filled after creating modules
+        "moduleId": "module2",
         "difficulty": "Medium",
         "order": 1,
         "starterCode": """def process_list(numbers):
     # Your code here
     pass
 """,
-    },
-]
-
-# Sample test files for exercises
-SAMPLE_TESTS = {
-    "Factorial Calculator": """
-import pytest
-from exercise import factorial
-
-def test_factorial_zero():
-    assert factorial(0) == 1, "Factorial of 0 should be 1"
-    
-def test_factorial_one():
-    assert factorial(1) == 1, "Factorial of 1 should be 1"
-    
-def test_factorial_five():
-    assert factorial(5) == 120, "Factorial of 5 should be 120"
-    
-def test_factorial_ten():
-    assert factorial(10) == 3628800, "Factorial of 10 should be 3628800"
-    
-def test_factorial_negative():
-    assert factorial(-1) is None, "Factorial of negative numbers should return None"
-""",
-    "List Operations": """
+        "testCode": """
 import pytest
 from exercise import process_list
 
@@ -391,98 +376,92 @@ def test_process_list_negative():
     assert process_list([-3, -1, -4, -1, -5]) == -8, "Should return -5 + (-3) = -8"
     
 def test_process_list_mixed():
-    assert process_list([10, -5, 10, 15, 20, -5]) == -5 + 20, "Should return -5 + 20 = 15"
+    assert process_list([10, -5, 10, 15, 20, -5]) == 15, "Should return -5 + 20 = 15"
 """,
-}
-
-
-def initialize_firebase():
-    """Initialize Firebase Admin SDK"""
-    cred_path = os.environ.get("FIREBASE_CREDENTIALS", "firebase-credentials.json")
-
-    # Check if credentials exist
-    if not os.path.exists(cred_path):
-        print(f"Error: Firebase credentials file not found at {cred_path}")
-        return False
-
-    # Initialize Firebase
-    try:
-        cred = credentials.Certificate(cred_path)
-        firebase_admin.initialize_app(
-            cred, {"storageBucket": os.environ.get("FIREBASE_STORAGE_BUCKET")}
-        )
-        return True
-    except Exception as e:
-        print(f"Error initializing Firebase: {e}")
-        return False
+    },
+]
 
 
 def setup_modules():
-    """Set up sample modules in Firestore"""
-    db = firestore.client()
-    module_ids = []
-
+    """Set up sample modules in the filesystem"""
     print("Setting up modules...")
+
     for module in SAMPLE_MODULES:
-        # Add module to Firestore
-        module_ref = db.collection("modules").document()
-        module_ref.set(module)
+        module_id = module["id"]
+        module_dir = MODULES_DIR / module_id
 
-        module_id = module_ref.id
-        module_ids.append(module_id)
-        print(f"Created module: {module['title']} with ID: {module_id}")
+        # Create module directory
+        module_dir.mkdir(exist_ok=True)
 
-    return module_ids
+        # Create metadata.json
+        metadata = {
+            "title": module["title"],
+            "description": module["description"],
+            "order": module["order"],
+        }
+
+        with open(module_dir / "metadata.json", "w", encoding="utf-8") as f:
+            json.dump(metadata, f, indent=2)
+
+        # Create content.md
+        with open(module_dir / "content.md", "w", encoding="utf-8") as f:
+            f.write(module["content"])
+
+        print(f"Created module: {module['title']} in {module_dir}")
 
 
-def setup_exercises(module_ids):
-    """Set up sample exercises in Firestore and Firebase Storage"""
-    db = firestore.client()
-    bucket = storage.bucket()
-    exercise_ids = []
-
+def setup_exercises():
+    """Set up sample exercises in the filesystem"""
     print("Setting up exercises...")
-    for i, exercise in enumerate(SAMPLE_EXERCISES):
-        # Assign to a module
-        module_index = i % len(module_ids)
-        exercise["moduleId"] = module_ids[module_index]
 
-        # Add exercise to Firestore
-        exercise_ref = db.collection("exercises").document()
-        exercise_ref.set(exercise)
+    for exercise in SAMPLE_EXERCISES:
+        exercise_id = exercise["id"]
+        exercise_dir = EXERCISES_DIR / exercise_id
 
-        exercise_id = exercise_ref.id
-        exercise_ids.append(exercise_id)
-        print(f"Created exercise: {exercise['title']} with ID: {exercise_id}")
+        # Create exercise directory
+        exercise_dir.mkdir(exist_ok=True)
 
-        # Upload test file to Firebase Storage
-        exercise_title = exercise["title"]
-        if exercise_title in SAMPLE_TESTS:
-            test_content = SAMPLE_TESTS[exercise_title]
+        # Create metadata.json
+        metadata = {
+            "title": exercise["title"],
+            "moduleId": exercise["moduleId"],
+            "difficulty": exercise["difficulty"],
+            "order": exercise["order"],
+        }
 
-            # Create storage blob
-            blob = bucket.blob(f"exercises/{exercise_id}/test.py")
-            blob.upload_from_string(test_content)
-            print(f"Uploaded test file for exercise: {exercise_title}")
+        with open(exercise_dir / "metadata.json", "w", encoding="utf-8") as f:
+            json.dump(metadata, f, indent=2)
 
-    return exercise_ids
+        # Create description.md
+        with open(exercise_dir / "description.md", "w", encoding="utf-8") as f:
+            f.write(exercise["description"])
+
+        # Create starter_code.py
+        with open(exercise_dir / "starter_code.py", "w", encoding="utf-8") as f:
+            f.write(exercise["starterCode"])
+
+        # Create test.py
+        with open(exercise_dir / "test.py", "w", encoding="utf-8") as f:
+            f.write(exercise["testCode"])
+
+        print(f"Created exercise: {exercise['title']} in {exercise_dir}")
 
 
 def main():
-    """Main function to set up sample data in Firebase"""
-    # Initialize Firebase
-    if not initialize_firebase():
-        print("Failed to initialize Firebase. Exiting.")
-        return
+    """Main function to set up sample data in the filesystem"""
+    # Ensure course directories exist
+    ensure_course_directories()
 
     # Set up modules
-    module_ids = setup_modules()
+    setup_modules()
 
     # Set up exercises
-    exercise_ids = setup_exercises(module_ids)
+    setup_exercises()
 
     print("\nSetup completed successfully!")
-    print(f"Created {len(module_ids)} modules and {len(exercise_ids)} exercises.")
+    print(
+        f"Created {len(SAMPLE_MODULES)} modules and {len(SAMPLE_EXERCISES)} exercises."
+    )
     print("You can now run the Streamlit app and test with this sample data.")
 
 

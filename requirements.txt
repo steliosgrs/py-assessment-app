@@ -1,6 +1,6 @@
-streamlit==1.36.0
+streamlit
+google-cloud-firestore
 firebase-admin==6.3.0
-pyrebase4==4.7.1
 python-dotenv==1.0.1
 pytest==7.4.0
 markdown==3.5.1

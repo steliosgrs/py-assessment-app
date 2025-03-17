@@ -1,5 +1,5 @@
 """
-Exercises page for Streamlit application - allows submitting code solutions for testing.
+Exercises page for Streamlit application - loads exercises from local files.
 """
 
 import streamlit as st
@@ -12,12 +12,17 @@ import io
 # Add the project root to the Python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
-from shared.firebase import (
-    get_exercises_by_module,
+# Import from local file system instead of Firebase
+from shared.course_loader import (
+    get_all_modules,
     get_module_by_id,
+    get_exercises_by_module,
+    get_exercise_by_id,
+    get_test_file_for_exercise,
     mark_exercise_completed,
 )
-from shared.exercise_runner import test_exercise, get_test_file_for_exercise
+from shared.exercise_runner import test_exercise
+from shared.firebase import get_user_by_id  # Still need this for user data
 
 # Initialize the session state if not already done
 if "user_id" not in st.session_state:
@@ -32,8 +37,15 @@ def render_markdown(md_content):
     st.markdown(html, unsafe_allow_html=True)
 
 
-def display_exercise(exercise_id, exercise_data):
+def display_exercise(exercise_id):
     """Display a specific exercise"""
+    # Get full exercise data
+    exercise_data = get_exercise_by_id(exercise_id)
+
+    if not exercise_data:
+        st.error("Exercise not found!")
+        return
+
     st.title(exercise_data.get("title", "Exercise"))
 
     # Display the description as markdown
@@ -155,8 +167,7 @@ def display_exercise_list(module_id):
         with col2:
             if st.button("Start", key=f"start_{exercise.get('id')}"):
                 st.session_state.selected_exercise = exercise.get("id")
-                st.session_state.selected_exercise_data = exercise
-                st.experimental_rerun()
+                # st.experimental_rerun()
 
 
 def main():
@@ -175,9 +186,6 @@ def main():
     if "selected_exercise" not in st.session_state:
         st.session_state.selected_exercise = None
 
-    if "selected_exercise_data" not in st.session_state:
-        st.session_state.selected_exercise_data = None
-
     # Display navigation in sidebar
     with st.sidebar:
         st.title("Navigation")
@@ -195,22 +203,18 @@ def main():
             if st.button(title, key=f"nav_{module_id}"):
                 st.session_state.selected_module = module_id
                 st.session_state.selected_exercise = None
-                st.session_state.selected_exercise_data = None
-                st.experimental_rerun()
+                # st.experimental_rerun()
 
         # Back to exercise list if an exercise is selected
         if st.session_state.selected_exercise:
             if st.button("Back to Exercise List"):
                 st.session_state.selected_exercise = None
-                st.session_state.selected_exercise_data = None
-                st.experimental_rerun()
+                # st.experimental_rerun()
 
     # Display content based on state
-    if st.session_state.selected_exercise and st.session_state.selected_exercise_data:
+    if st.session_state.selected_exercise:
         # Display specific exercise
-        display_exercise(
-            st.session_state.selected_exercise, st.session_state.selected_exercise_data
-        )
+        display_exercise(st.session_state.selected_exercise)
     elif st.session_state.selected_module:
         # Display exercises for selected module
         display_exercise_list(st.session_state.selected_module)
@@ -235,7 +239,7 @@ def main():
             with col2:
                 if st.button("View Exercises", key=f"view_{module.get('id')}"):
                     st.session_state.selected_module = module.get("id")
-                    st.experimental_rerun()
+                    # st.experimental_rerun()
 
 
 if __name__ == "__main__":

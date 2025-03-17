@@ -1,5 +1,6 @@
 """
-Firebase utilities for authentication and storage - without Pyrebase dependency.
+Firebase utilities for authentication and user progress tracking only.
+Module and exercise content is stored locally to reduce database operations.
 """
 
 import os
@@ -7,28 +8,29 @@ import json
 import requests
 from typing import Optional, Dict, Any, Tuple
 import firebase_admin
-from firebase_admin import credentials, auth, storage, firestore
-import streamlit as st
+from firebase_admin import credentials, auth, firestore
 
 # Firebase authentication endpoint
 FIREBASE_AUTH_URL = "https://identitytoolkit.googleapis.com/v1/accounts"
 
+# Global variable to store firebase admin app
 
-@st.cache_resource
+
 def initialize_firebase():
+    firebase_admin_app = None
     """
     Initialize Firebase Admin SDK using credentials from environment variable or file.
     """
+    # global firebase_admin_app
     cred_path = os.environ.get("FIREBASE_CREDENTIALS", "firebase-credentials.json")
 
     # Check if Firebase Admin is already initialized
     if not firebase_admin._apps:
         # If credentials are provided as a file
-        print(f"Exists {os.path.exists(cred_path)}")
         if os.path.exists(cred_path):
             cred = credentials.Certificate(cred_path)
             try:
-                firebase_admin.initialize_app(cred)
+                firebase_admin_app = firebase_admin.initialize_app(cred)
             except Exception as e:
                 print(f"Error initializing Firebase Admin from file: {e}")
                 return False
@@ -42,7 +44,6 @@ def initialize_firebase():
 def _get_api_key():
     """Get Firebase Web API Key from environment variable"""
     api_key = os.environ.get("FIREBASE_API_KEY")
-    print("API_KEY", api_key)
     if not api_key:
         print("FIREBASE_API_KEY environment variable not set")
         return None
@@ -141,7 +142,7 @@ def authenticate_user(
 
         response = requests.post(signin_url, json=signin_payload)
         data = response.json()
-        print(f"Data: {data}")
+
         if "error" in data:
             error_message = data["error"].get("message", "Authentication failed")
             if error_message == "EMAIL_NOT_FOUND":
@@ -226,167 +227,7 @@ def get_user_by_id(user_id: str) -> Optional[Dict[str, Any]]:
         return None
 
 
-# Storage functions
-# def upload_file(
-#     file_data, file_name: str, content_type: str = None
-# ) -> Tuple[bool, str, Optional[str]]:
-#     """
-#     Upload a file to Firebase Storage.
-
-#     Args:
-#         file_data: File data to upload
-#         file_name (str): Name to give the file in storage
-#         content_type (str, optional): Content type of the file
-
-#     Returns:
-#         Tuple[bool, str, Optional[str]]:
-#             - Success status (bool)
-#             - Message (str)
-#             - Download URL if successful, None otherwise
-#     """
-#     if not initialize_firebase():
-#         return False, "Firebase initialization failed", None
-
-#     try:
-#         bucket = storage.bucket()
-#         blob = bucket.blob(file_name)
-
-#         if content_type:
-#             blob.content_type = content_type
-
-#         blob.upload_from_string(file_data)
-
-#         # Make the blob publicly accessible
-#         blob.make_public()
-
-#         return True, "File uploaded successfully", blob.public_url
-#     except Exception as e:
-#         return False, f"Error uploading file: {str(e)}", None
-
-
-# def download_file(file_name: str) -> Tuple[bool, str, Optional[bytes]]:
-#     """
-#     Download a file from Firebase Storage.
-
-#     Args:
-#         file_name (str): Name of the file in storage
-
-#     Returns:
-#         Tuple[bool, str, Optional[bytes]]:
-#             - Success status (bool)
-#             - Message (str)
-#             - File data if successful, None otherwise
-#     """
-#     if not initialize_firebase():
-#         return False, "Firebase initialization failed", None
-
-#     try:
-#         bucket = storage.bucket()
-#         blob = bucket.blob(file_name)
-
-#         if not blob.exists():
-#             return False, "File not found", None
-
-#         file_data = blob.download_as_bytes()
-
-#         return True, "File downloaded successfully", file_data
-#     except Exception as e:
-#         return False, f"Error downloading file: {str(e)}", None
-
-
-# Module and exercise functions
-def get_all_modules() -> list:
-    """
-    Get all available modules from Firestore.
-
-    Returns:
-        list: List of module documents
-    """
-    if not initialize_firebase():
-        return []
-
-    try:
-        db = firestore.client()
-        modules_ref = db.collection("modules").order_by("order")
-        modules_docs = modules_ref.stream()
-
-        # Create a list of modules with their IDs included
-        modules = []
-        for doc in modules_docs:
-            module_data = doc.to_dict()
-            module_data["id"] = doc.id
-            modules.append(module_data)
-
-        return modules
-    except Exception as e:
-        print(f"Error getting modules: {str(e)}")
-        return []
-
-
-def get_module_by_id(module_id: str) -> Optional[Dict[str, Any]]:
-    """
-    Get a module by ID from Firestore.
-
-    Args:
-        module_id (str): Module ID
-
-    Returns:
-        Optional[Dict]: Module data if found, None otherwise
-    """
-    if not initialize_firebase():
-        return None
-
-    try:
-        db = firestore.client()
-        module_doc = db.collection("modules").document(module_id).get()
-
-        if not module_doc.exists:
-            return None
-
-        module_data = module_doc.to_dict()
-        module_data["id"] = module_id
-
-        return module_data
-    except Exception as e:
-        print(f"Error getting module: {str(e)}")
-        return None
-
-
-def get_exercises_by_module(module_id: str) -> list:
-    """
-    Get all exercises for a specific module.
-
-    Args:
-        module_id (str): Module ID
-
-    Returns:
-        list: List of exercise documents
-    """
-    if not initialize_firebase():
-        return []
-
-    try:
-        db = firestore.client()
-        exercises_ref = (
-            db.collection("exercises")
-            .where("moduleId", "==", module_id)
-            .order_by("order")
-        )
-        exercise_docs = exercises_ref.stream()
-
-        # Create a list of exercises with their IDs included
-        exercises = []
-        for doc in exercise_docs:
-            exercise_data = doc.to_dict()
-            exercise_data["id"] = doc.id
-            exercises.append(exercise_data)
-
-        return exercises
-    except Exception as e:
-        print(f"Error getting exercises: {str(e)}")
-        return []
-
-
+# User progress tracking
 def mark_module_completed(user_id: str, module_id: str) -> bool:
     """
     Mark a module as completed for a user.

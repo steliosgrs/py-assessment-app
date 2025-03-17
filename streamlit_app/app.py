@@ -1,5 +1,5 @@
 """
-Main Streamlit application entry point with Firebase integration.
+Main Streamlit application entry point with Firebase authentication and local content.
 """
 
 import streamlit as st
@@ -13,21 +13,25 @@ print(f"Mode Debug: {DEBUG}")
 # Add the project root to the Python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from shared.firebase import initialize_firebase, get_user_by_id, get_all_modules
+from shared.firebase import initialize_firebase, get_user_by_id
+from shared.course_loader import get_all_modules, ensure_course_directories
 
 # Initialize the session state
 if "user_id" not in st.session_state:
     st.session_state.user_id = None
 
+# Ensure course directories exist
+ensure_course_directories()
+
 # Initialize Firebase
-if not DEBUG:
-    firebase_initialized = initialize_firebase()
-    if not firebase_initialized:
-        st.error("Firebase initialization failed. Please check your credentials.")
+firebase_initialized = initialize_firebase()
+if not firebase_initialized:
+    st.error("Firebase initialization failed. Please check your credentials.")
 
 
 def is_authenticated():
     if DEBUG:
+        st.session_state.user_id = "4350934509344u503"
         return True
     """Check if the user is authenticated."""
     return st.session_state.user_id is not None
@@ -56,10 +60,10 @@ def logout():
     # Clear any module or exercise selections
     if "selected_module" in st.session_state:
         st.session_state.selected_module = None
-    if "selected_exercise" in st.session_state:
-        st.session_state.selected_exercise = None
-    if "selected_exercise_data" in st.session_state:
-        st.session_state.selected_exercise_data = None
+    # if "selected_exercise" in st.session_state:
+    #     st.session_state.selected_exercise = None
+    # if "selected_exercise_data" in st.session_state:
+    #     st.session_state.selected_exercise_data = None
 
     # TODO: Do not rerun just clear the login user
     # st.experimental_rerun()
@@ -108,11 +112,9 @@ def main():
             # Progress information
             st.subheader("Your Progress")
 
-            # Get modules and exercises data
-            # modules = get_all_modules()
-            # total_modules = len(modules)
-            modules = []
-            total_modules = 1
+            # Get modules data
+            modules = get_all_modules()
+            total_modules = len(modules)
 
             # Calculate completion
             completed_modules = user.get("completedModules", [])

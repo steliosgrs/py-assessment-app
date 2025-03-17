@@ -5,8 +5,8 @@ Authentication utilities for the application.
 import secrets
 from typing import Optional, Dict, Any, Tuple
 
-from shared.models import User
-from shared.db import get_db_session
+from .models import User
+from .db import get_db_session
 
 
 def create_user(

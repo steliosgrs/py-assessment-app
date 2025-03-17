@@ -184,25 +184,3 @@ def validate_exercise_inline(
         return test_success, test_results
     except Exception as e:
         return False, [f"Error running tests: {str(e)}"]
-
-
-def get_test_file_for_exercise(exercise_id: str) -> Tuple[bool, str, Optional[bytes]]:
-    """
-    Get the test file for a specific exercise from Firebase Storage.
-
-    Args:
-        exercise_id (str): Exercise ID
-
-    Returns:
-        Tuple[bool, str, Optional[bytes]]:
-            - Success status (bool)
-            - Message (str)
-            - Test file content if successful, None otherwise
-    """
-    from shared.firebase import download_file
-
-    # Construct the path to the test file in Firebase Storage
-    test_file_path = f"exercises/{exercise_id}/test.py"
-
-    # Download the test file
-    return download_file(test_file_path)
