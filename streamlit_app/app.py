@@ -8,6 +8,8 @@ import os
 import dotenv
 
 dotenv.load_dotenv()
+DEBUG = os.environ.get("DEBUG")
+print(f"Mode Debug: {DEBUG}")
 # Add the project root to the Python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -18,17 +20,26 @@ if "user_id" not in st.session_state:
     st.session_state.user_id = None
 
 # Initialize Firebase
-firebase_initialized = initialize_firebase()
-if not firebase_initialized:
-    st.error("Firebase initialization failed. Please check your credentials.")
+if not DEBUG:
+    firebase_initialized = initialize_firebase()
+    if not firebase_initialized:
+        st.error("Firebase initialization failed. Please check your credentials.")
 
 
 def is_authenticated():
+    if DEBUG:
+        return True
     """Check if the user is authenticated."""
     return st.session_state.user_id is not None
 
 
 def get_current_user():
+    if DEBUG:
+        return {
+            "uid": "4350934509344u503",
+            "email": "stelios@uniwa.gr",
+            "displayName": "Stelios Georgaras",
+        }
     """Get the current authenticated user."""
     if is_authenticated():
         user_data = get_user_by_id(st.session_state.user_id)
@@ -50,7 +61,8 @@ def logout():
     if "selected_exercise_data" in st.session_state:
         st.session_state.selected_exercise_data = None
 
-    st.experimental_rerun()
+    # TODO: Do not rerun just clear the login user
+    # st.experimental_rerun()
 
 
 def main():
@@ -77,7 +89,7 @@ def main():
             else:
                 st.error("User data not found. Please log in again.")
                 st.session_state.user_id = None
-                st.experimental_rerun()
+                # st.experimental_rerun()
         else:
             st.info("Please log in to access the application")
             st.page_link("pages/login.py", label="Login")
@@ -97,8 +109,10 @@ def main():
             st.subheader("Your Progress")
 
             # Get modules and exercises data
-            modules = get_all_modules()
-            total_modules = len(modules)
+            # modules = get_all_modules()
+            # total_modules = len(modules)
+            modules = []
+            total_modules = 1
 
             # Calculate completion
             completed_modules = user.get("completedModules", [])
