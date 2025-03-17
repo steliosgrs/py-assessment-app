@@ -1,6 +1,6 @@
 streamlit==1.36.0
-psycopg2-binary==2.9.9
-sqlalchemy==2.0.28
-werkzeug==3.0.1
-pydantic==2.6.1
+firebase-admin==6.3.0
+pyrebase4==4.7.1
 python-dotenv==1.0.1
+pytest==7.4.0
+markdown==3.5.1

@@ -19,7 +19,13 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "development-secret-key-change-in-prod
 SESSION_COOKIE_NAME = "app_session"
 SESSION_EXPIRY_DAYS = 30
 
-# Database settings (moved to db.py for better organization)
+# Firebase settings
+FIREBASE_CREDENTIALS = os.environ.get(
+    "FIREBASE_CREDENTIALS", "firebase-credentials.json"
+)
+FIREBASE_STORAGE_BUCKET = os.environ.get(
+    "FIREBASE_STORAGE_BUCKET", "your-project-id.appspot.com"
+)
 
 # Streamlit settings
 STREAMLIT_PORT = int(os.environ.get("STREAMLIT_PORT", "8501"))

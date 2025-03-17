@@ -1,42 +1,21 @@
 version: "3.8"
 
 services:
-  # PostgreSQL database
-  db:
-    image: postgres:15
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: appdb
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  # Streamlit application
+  # Streamlit application with Firebase
   streamlit:
     build:
       context: .
       dockerfile: streamlit_app/Dockerfile
     ports:
       - "8501:8501"
-    depends_on:
-      db:
-        condition: service_healthy
     environment:
-      - DB_USER=postgres
-      - DB_PASSWORD=postgres
-      - DB_HOST=db
-      - DB_PORT=5432
-      - DB_NAME=appdb
       - SECRET_KEY=your-production-secret-key-change-this
+      - FIREBASE_CREDENTIALS=firebase-credentials.json
+      - FIREBASE_STORAGE_BUCKET=your-firebase-project.appspot.com
+      - FIREBASE_API_KEY=your-firebase-api-key
+      # Optional: instead of mounting the credentials file, you can pass the JSON as an env var
+      # - FIREBASE_CREDENTIALS_JSON={"type":"service_account","project_id":"your-project-id",...}
     volumes:
       - ./storage:/app/storage
-
-volumes:
-  postgres_data:
+      - ./firebase-credentials.json:/app/firebase-credentials.json:ro
+      # The credentials file should be outside of version control

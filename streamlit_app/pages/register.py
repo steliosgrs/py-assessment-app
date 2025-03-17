@@ -1,5 +1,5 @@
 """
-Registration page for Streamlit application.
+Registration page for Streamlit application with Firebase authentication.
 """
 
 import streamlit as st
@@ -10,7 +10,7 @@ import re
 # Add the project root to the Python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
-from shared.auth import create_user
+from shared.firebase import create_user
 
 
 def is_valid_email(email):
@@ -27,33 +27,18 @@ def is_valid_email(email):
     return re.match(pattern, email) is not None
 
 
-def is_valid_username(username):
+def register_user(display_name, email, password, confirm_password):
     """
-    Validate username format.
+    Register a new user with Firebase.
 
     Args:
-        username (str): Username to validate
-
-    Returns:
-        bool: True if valid, False otherwise
-    """
-    # Only allow alphanumeric characters and underscores
-    pattern = r"^[a-zA-Z0-9_]{3,20}$"
-    return re.match(pattern, username) is not None
-
-
-def register_user(username, email, password, confirm_password):
-    """
-    Register a new user.
-
-    Args:
-        username (str): Username
+        display_name (str): Display name for the user
         email (str): Email
         password (str): Password
         confirm_password (str): Password confirmation
     """
     # Validate input
-    if not username or not email or not password or not confirm_password:
+    if not display_name or not email or not password or not confirm_password:
         st.error("Please fill in all fields.")
         return
 
@@ -65,18 +50,12 @@ def register_user(username, email, password, confirm_password):
         st.error("Please enter a valid email address.")
         return
 
-    if not is_valid_username(username):
-        st.error(
-            "Username must be 3-20 characters and can only contain letters, numbers, and underscores."
-        )
-        return
-
-    if len(password) < 8:
-        st.error("Password must be at least 8 characters long.")
+    if len(password) < 6:  # Firebase requires at least 6 characters
+        st.error("Password must be at least 6 characters long.")
         return
 
     # Create user
-    success, message, user = create_user(username, email, password)
+    success, message, user = create_user(email, password, display_name)
 
     if success:
         st.success(message)
@@ -98,7 +77,7 @@ def main():
 
     # Registration form
     with st.form("register_form"):
-        username = st.text_input("Username")
+        display_name = st.text_input("Display Name")
         email = st.text_input("Email")
         password = st.text_input("Password", type="password")
         confirm_password = st.text_input("Confirm Password", type="password")
@@ -106,7 +85,7 @@ def main():
         submit_button = st.form_submit_button("Register")
 
         if submit_button:
-            register_user(username, email, password, confirm_password)
+            register_user(display_name, email, password, confirm_password)
 
     # Link to login
     st.write("Already have an account?")
