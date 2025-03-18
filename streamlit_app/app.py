@@ -23,15 +23,16 @@ if "user_id" not in st.session_state:
 # Ensure course directories exist
 ensure_course_directories()
 
-# Initialize Firebase
-firebase_initialized = initialize_firebase()
-if not firebase_initialized:
-    st.error("Firebase initialization failed. Please check your credentials.")
+if not DEBUG:
+    # Initialize Firebase
+    firebase_initialized = initialize_firebase()
+    if not firebase_initialized:
+        st.error("Firebase initialization failed. Please check your credentials.")
 
 
 def is_authenticated():
     if DEBUG:
-        st.session_state.user_id = "4350934509344u503"
+        st.session_state.user_id = "TEST_ID_123"
         return True
     """Check if the user is authenticated."""
     return st.session_state.user_id is not None
@@ -40,7 +41,7 @@ def is_authenticated():
 def get_current_user():
     if DEBUG:
         return {
-            "uid": "4350934509344u503",
+            "uid": "TEST_ID_123",
             "email": "stelios@uniwa.gr",
             "displayName": "Stelios Georgaras",
         }

@@ -17,6 +17,7 @@ from shared.course_loader import (
     get_module_by_id,
     mark_module_completed,
 )
+from shared.markdown_converter import load_and_convert_markdown
 from shared.firebase import get_user_by_id  # Still need this for user data
 
 # Initialize the session state if not already done
@@ -24,18 +25,20 @@ if "user_id" not in st.session_state:
     st.session_state.user_id = None
 
 
-def render_markdown(md_content):
+def render_markdown(filename):
     """Render markdown content in Streamlit"""
-    html = markdown.markdown(
-        md_content, extensions=["fenced_code", "codehilite", "tables"]
-    )
-    st.markdown(html, unsafe_allow_html=True)
+    print(f"Filename: {filename}")
+    content = load_and_convert_markdown(filename)
+    # html = markdown.markdown(
+    #     md_content, extensions=["fenced_code", "codehilite", "tables"]
+    # )
+    st.markdown(content, unsafe_allow_html=True)
 
 
 def load_module_content(module_id):
     """Load module content from local file system"""
     module = get_module_by_id(module_id)
-
+    print(module)
     if not module:
         st.error("Module not found!")
         return
@@ -46,7 +49,9 @@ def load_module_content(module_id):
     st.title(module.get("title", "Module"))
 
     # Display the module content as markdown
-    render_markdown(module.get("content", "No content available"))
+    print(module.get("filename", "No content available"))
+    render_markdown(module.get("filename", "No content available"))
+    # render_markdown(module.get("content", "No content available"))
 
     # Mark as completed button
     if st.button("Mark as Completed"):

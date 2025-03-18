@@ -94,6 +94,7 @@ def get_module_by_id(module_id: str) -> Optional[Dict[str, Any]]:
 
         # Load content
         content_file = module_dir / "content.md"
+        metadata["filename"] = str(content_file)
         if content_file.exists():
             with open(content_file, "r", encoding="utf-8") as f:
                 metadata["content"] = f.read()
