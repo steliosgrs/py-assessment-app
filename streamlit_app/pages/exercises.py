@@ -110,16 +110,16 @@ def display_exercise(exercise_id):
                 st.success("Exercise marked as completed in your profile!")
 
             # Show detailed test results
-            with st.expander("View detailed test results"):
-                for message in messages:
-                    st.write(message)
+            # with st.expander("View detailed test results"):
+            #     for message in messages:
+            #         st.write(message)
         else:
             st.error("❌ Some tests failed. Check the details and try again.")
 
             # Show detailed test results
-            st.subheader("Test Results")
-            for message in messages:
-                st.text(message)
+            # st.subheader("Test Results")
+            # for message in messages:
+            #     st.text(message)
 
 
 def display_exercise_list(module_id):
@@ -133,6 +133,7 @@ def display_exercise_list(module_id):
     st.title(f"Exercises: {module.get('title', 'Module')}")
 
     # Get exercises for this module
+    print(f"MODULE_ID {module_id}")
     exercises = get_exercises_by_module(module_id)
 
     if not exercises:
@@ -170,8 +171,8 @@ def display_exercise_list(module_id):
                 # st.experimental_rerun()
 
 
-def main():
-    """Main function for the exercises page."""
+def run():
+
     # Check if logged in
     if st.session_state.user_id is None:
         st.warning("Please log in to access the exercises.")
@@ -240,7 +241,3 @@ def main():
                 if st.button("View Exercises", key=f"view_{module.get('id')}"):
                     st.session_state.selected_module = module.get("id")
                     # st.experimental_rerun()
-
-
-if __name__ == "__main__":
-    main()

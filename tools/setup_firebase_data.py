@@ -448,7 +448,6 @@ def setup_exercises():
 
 
 def main():
-    """Main function to set up sample data in the filesystem"""
     # Ensure course directories exist
     ensure_course_directories()
 

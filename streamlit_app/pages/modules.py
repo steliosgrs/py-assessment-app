@@ -27,8 +27,9 @@ if "user_id" not in st.session_state:
 
 def render_markdown(filename):
     """Render markdown content in Streamlit"""
-    print(f"Filename: {filename}")
+
     content = load_and_convert_markdown(filename)
+    # TODO: Check supported extensions
     # html = markdown.markdown(
     #     md_content, extensions=["fenced_code", "codehilite", "tables"]
     # )
@@ -38,7 +39,7 @@ def render_markdown(filename):
 def load_module_content(module_id):
     """Load module content from local file system"""
     module = get_module_by_id(module_id)
-    print(module)
+
     if not module:
         st.error("Module not found!")
         return
@@ -49,7 +50,7 @@ def load_module_content(module_id):
     st.title(module.get("title", "Module"))
 
     # Display the module content as markdown
-    print(module.get("filename", "No content available"))
+
     render_markdown(module.get("filename", "No content available"))
     # render_markdown(module.get("content", "No content available"))
 
@@ -85,7 +86,7 @@ def display_module_list():
         user_completed_modules = st.session_state.user.get("completedModules", [])
 
     # Display module cards
-    for module in modules:
+    for index, module in enumerate(modules, start=1):
         col1, col2 = st.columns([4, 1])
 
         with col1:
@@ -98,9 +99,9 @@ def display_module_list():
 
             # Display completion status
             if is_completed:
-                st.markdown(f"### ✅ {title}")
+                st.markdown(f"### ✅ {index}. {title}")
             else:
-                st.markdown(f"### {title}")
+                st.markdown(f"### {index}. {title}")
 
             st.write(description)
 
@@ -110,8 +111,8 @@ def display_module_list():
                 # st.experimental_rerun()
 
 
-def main():
-    """Main function for the modules page."""
+def run():
+
     # Check if logged in
     if st.session_state.user_id is None:
         st.warning("Please log in to access the modules.")
@@ -123,26 +124,22 @@ def main():
     if "selected_module" not in st.session_state:
         st.session_state.selected_module = None
 
-    # Display navigation in sidebar
-    with st.sidebar:
-        st.title("Navigation")
-        if st.button("Back to Home"):
-            st.switch_page("app.py")
-        if st.button("Exercises"):
-            st.switch_page("pages/exercises.py")
+    # TODO: Display navigation in sidebar
+    # with st.sidebar:
+    #     st.title("Navigation")
+    #     if st.button("Back to Home"):
+    #         st.switch_page("app.py")
+    #     if st.button("Exercises"):
+    #         st.switch_page("pages/exercises.py")
 
-        # Show "All Modules" button if a specific module is selected
-        if st.session_state.selected_module:
-            if st.button("All Modules"):
-                st.session_state.selected_module = None
-                # st.experimental_rerun()
-
+    #     # Show "All Modules" button if a specific module is selected
+    #     if st.session_state.selected_module:
+    #         if st.button("All Modules"):
+    #             st.session_state.selected_module = None
+    #             # st.experimental_rerun()
+    print("selected_module", st.session_state.selected_module)
     # Display modules list or specific module
     if st.session_state.selected_module:
         load_module_content(st.session_state.selected_module)
     else:
         display_module_list()
-
-
-if __name__ == "__main__":
-    main()

@@ -36,7 +36,6 @@ def login_user(email, password):
 
 
 def main():
-    """Main function for the login page."""
     st.title("Login")
 
     # Check if already logged in

@@ -1,0 +1,9 @@
+{
+  "title": "String Reversal Challenge",
+  "description": "Write a function that reverses a string character by character",
+  "difficulty": "Easy",
+  "tags": ["strings", "algorithms", "beginner"],
+  "moduleId": "module-01",
+  "order": 1,
+  "estimatedTime": "15 minutes"
+}

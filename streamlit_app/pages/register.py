@@ -66,7 +66,6 @@ def register_user(display_name, email, password, confirm_password):
 
 
 def main():
-    """Main function for the registration page."""
     st.title("Register")
 
     # Check if already logged in

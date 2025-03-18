@@ -135,6 +135,7 @@ def get_exercises_by_module(module_id: str) -> List[Dict[str, Any]]:
 
         # Load metadata
         metadata_file = exercise_dir / "metadata.json"
+        print(f"metadata_file {metadata_file}")
         if not metadata_file.exists():
             print(f"Warning: Metadata file not found for exercise {exercise_id}")
             continue
