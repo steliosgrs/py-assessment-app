@@ -3,6 +3,7 @@ Exercise testing utilities for running pytest on submitted code.
 """
 
 import os
+from pathlib import Path
 import sys
 import tempfile
 import subprocess
@@ -22,13 +23,16 @@ def save_code_to_temp_file(code: str, filename: str = "exercise.py") -> str:
         str: Path to the temporary file
     """
     # Create a temporary directory
-    temp_dir = tempfile.mkdtemp()
-    file_path = os.path.join(temp_dir, filename)
+    # temp_dir = tempfile.mkdtemp()
+    Path("temp").mkdir(parents=True, exist_ok=True)
+    temp_dir = Path("temp")
+    file_path = temp_dir / filename
+    # file_path = os.path.join(temp_dir, filename)
+    print(f"save_code_to_temp_file filename:  {file_path}")
 
     # Write code to the file
     with open(file_path, "w") as f:
         f.write(code)
-
     return file_path
 
 
@@ -44,7 +48,9 @@ def save_test_to_temp_file(test_code: str, filename: str = "test_exercise.py") -
         str: Path to the temporary file
     """
     # Create a temporary directory
-    temp_dir = tempfile.mkdtemp()
+    # temp_dir = tempfile.mkdtemp()
+    Path("temp").mkdir(parents=True, exist_ok=True)
+    temp_dir = Path("temp")
     file_path = os.path.join(temp_dir, filename)
 
     # Write test code to the file
@@ -115,7 +121,7 @@ def test_exercise(
     # Make sure the test can import the exercise file
     exercise_dir = os.path.dirname(exercise_file)
     test_dir = os.path.dirname(test_file)
-
+    print(f"PATHS, {exercise_dir}, {test_dir}")
     # Add the exercise directory to Python path if they're different
     if exercise_dir != test_dir:
         sys.path.append(exercise_dir)
@@ -125,11 +131,12 @@ def test_exercise(
 
     # Remove temporary files and directories
     try:
-        os.remove(exercise_file)
-        os.remove(test_file)
-        os.rmdir(os.path.dirname(exercise_file))
-        if exercise_dir != test_dir:
-            os.rmdir(test_dir)
+        pass
+        # os.remove(exercise_file)
+        # os.remove(test_file)
+        # os.rmdir(os.path.dirname(exercise_file))
+        # if exercise_dir != test_dir:
+        #     os.rmdir(test_dir)
     except:
         pass
 

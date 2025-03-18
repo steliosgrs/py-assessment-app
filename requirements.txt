@@ -1,4 +1,5 @@
 streamlit
+streamlit_option_menu
 google-cloud-firestore
 firebase-admin==6.3.0
 python-dotenv==1.0.1

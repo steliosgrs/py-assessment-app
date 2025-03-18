@@ -1,0 +1,39 @@
+/project_root/
+├── shared/
+│   ├── __init__.py
+│   ├── firebase.py         # Firebase auth only (no content storage)
+│   ├── course_loader.py    # NEW: Handles loading course content from files
+│   ├── exercise_runner.py  # Testing utilities
+│   └── config.py           # Configuration settings
+├── streamlit_app/
+│   ├── __init__.py
+│   ├── app.py              # Main Streamlit application
+│   ├── pages/
+│   │   ├── __init__.py
+│   │   ├── login.py
+│   │   ├── register.py
+│   │   ├── modules.py      # Updated to load content from files
+│   │   └── exercises.py    # Updated to load content from files
+├── course/                 # NEW: Directory for course content
+│   ├── modules/            # Module content in Markdown
+│   │   ├── module1/
+│   │   │   ├── metadata.json  # Title, description, order, etc.
+│   │   │   └── content.md     # Module content in Markdown
+│   │   ├── module2/
+│   │   │   ├── metadata.json
+│   │   │   └── content.md
+│   ├── exercises/          # Exercise content and tests
+│   │   ├── exercise1/
+│   │   │   ├── metadata.json  # Title, description, difficulty, etc.
+│   │   │   ├── description.md # Exercise description
+│   │   │   ├── starter_code.py # Starter code template
+│   │   │   └── test.py        # Test code
+│   │   ├── exercise2/
+│   │   │   ├── metadata.json
+│   │   │   ├── description.md
+│   │   │   ├── starter_code.py
+│   │   │   └── test.py
+├── storage/                # For user uploads if needed
+├── firebase-credentials.json
+├── docker-compose.yml
+└── requirements.txt
