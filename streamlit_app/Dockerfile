@@ -1,19 +1,37 @@
-FROM python:3.11-slim
+ARG PYTHON_VERSION=3.11
 
-WORKDIR /app
+FROM python:${PYTHON_VERSION}-bookworm AS builder
 
-# Copy requirements and install dependencies
+ARG APP_HOME=/app
+
+RUN apt-get update && apt-get install --no-install-recommends -y \
+    build-essential && \
+    apt clean && rm -rf /var/lib/apt/lists/*
+
+ADD https://astral.sh/uv/0.6.8/install.sh /uv-installer.sh
+RUN chmod -R 655 /uv-installer.sh && sh /uv-installer.sh && rm /uv-installer.sh
+ENV PATH="/root/.local/bin/:$PATH"
+
+WORKDIR ${APP_HOME}
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN uv init . && uv add -r requirements.txt
 
-# Copy the entire project
-COPY . .
+FROM python:${PYTHON_VERSION}-slim-bookworm AS runner
+ARG APP_HOME=/app
 
-# Expose the Streamlit port
-EXPOSE 8501
-
-# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONPATH=/app
 
-# Run Streamlit
+WORKDIR ${APP_HOME}
+
+COPY . .
+COPY --from=builder ${APP_HOME}/.venv .venv
+ENV PATH="/${APP_HOME}/.venv/bin:$PATH"
+
+RUN useradd --create-home uuser
+USER uuser
+
+EXPOSE 8501
+
 CMD ["streamlit", "run", "streamlit_app/app.py", "--server.port=8501", "--server.address=0.0.0.0"]

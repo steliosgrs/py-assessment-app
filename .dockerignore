@@ -1,0 +1,14 @@
+.ruff_cache/
+.venv/
+venv/
+.env
+README.md
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.cache
+.git
+.gitignore
+firebase-credentials.json
