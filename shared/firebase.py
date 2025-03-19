@@ -9,6 +9,7 @@ import requests
 from typing import Optional, Dict, Any, Tuple
 import firebase_admin
 from firebase_admin import credentials, auth, firestore
+import streamlit as st
 
 # Firebase authentication endpoint
 FIREBASE_AUTH_URL = "https://identitytoolkit.googleapis.com/v1/accounts"
@@ -22,20 +23,21 @@ def initialize_firebase():
     Initialize Firebase Admin SDK using credentials from environment variable or file.
     """
     # global firebase_admin_app
-    cred_path = os.environ.get("FIREBASE_CREDENTIALS", "firebase-credentials.json")
+    creds = st.secrets["FIREBASE_CREDENTIALS"]
 
     # Check if Firebase Admin is already initialized
     if not firebase_admin._apps:
         # If credentials are provided as a file
-        if os.path.exists(cred_path):
-            cred = credentials.Certificate(cred_path)
+        if creds:
+            creds = dict(creds)
+            cred = credentials.Certificate(creds)
             try:
                 firebase_admin_app = firebase_admin.initialize_app(cred)
             except Exception as e:
                 print(f"Error initializing Firebase Admin from file: {e}")
                 return False
         else:
-            print(f"Firebase credentials not found at {cred_path}")
+            print(f"Firebase credentials not found at {creds}")
             return False
 
     return True
