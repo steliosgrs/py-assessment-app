@@ -1,9 +1,0 @@
-{
-  "title": "Exercise 2",
-  "description": "Write a function that reverses a string character by character",
-  "difficulty": "Medium",
-  "tags": ["strings", "algorithms", "beginner"],
-  "moduleId": "module-02",
-  "order": 2,
-  "estimatedTime": "30 minutes"
-}
