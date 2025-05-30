@@ -33,6 +33,20 @@ The application uses Firebase Authentication and Firebase Storage, all container
 - Git
 - Firebase project with Authentication and Storage enabled
 
+1. Clone the repository:
+
+```bash
+git clone https://github.com/steliosgrs/py-assessment-app.git
+cd py-assessment-app
+```
+
+2. Update the Firebase configuration:
+
+   - Place your `firebase-credentials.json` in the project root
+   - Create a `secrets.toml` under `.streamlit` and add `FIREBASE_API_KEY`.
+     (Optional)
+   - Update the `FIREBASE_STORAGE_BUCKET` in `docker-compose.yml` with your Firebase project ID
+
 ### Firebase Setup
 
 1. Create a Firebase project at [https://console.firebase.google.com/](https://console.firebase.google.com/)
@@ -43,30 +57,7 @@ The application uses Firebase Authentication and Firebase Storage, all container
    - Click "Generate new private key"
    - Save the JSON file as `firebase-credentials.json` in the project root
 
-### Installation
-
-1. Clone the repository:
-
-   ```bash
-   git clone https://github.com/yourusername/your-repo-name.git
-   cd your-repo-name
-   ```
-
-2. Update the Firebase configuration:
-
-   - Place your `firebase-credentials.json` in the project root
-   - Update the `FIREBASE_STORAGE_BUCKET` in `docker-compose.yml` with your Firebase project ID
-
-3. Start the application using Docker Compose:
-
-   ```bash
-   docker-compose up -d
-   ```
-
-4. Access the Streamlit application:
-   - Open your browser and navigate to `http://localhost:8501`
-
-### Local Development
+#### Local Development
 
 For local development without Docker:
 
@@ -82,6 +73,20 @@ For local development without Docker:
    ```bash
    streamlit run streamlit_app/app.py
    ```
+
+#### Docker Installation
+
+Start the application using Docker Compose:
+
+```bash
+docker-compose up -d
+```
+
+#### Development Server
+
+Access the Streamlit application:
+
+- Open your browser and navigate to `http://localhost:8501`
 
 ## Security Considerations
 
