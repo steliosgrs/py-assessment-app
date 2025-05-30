@@ -7,9 +7,9 @@ import sys
 import os
 
 # Add the project root to the Python path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+# sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
-from shared.firebase import authenticate_user
+from utils.firebase import authenticate_user
 
 # Initialize the session state if not already done
 if "user_id" not in st.session_state:
@@ -47,6 +47,7 @@ def main():
     # Login form
     with st.form("login_form"):
         email = st.text_input("Email")
+
         password = st.text_input("Password", type="password")
         submit_button = st.form_submit_button("Login")
 
@@ -66,5 +67,4 @@ def main():
         st.switch_page("app.py")
 
 
-if __name__ == "__main__":
-    main()
+main()

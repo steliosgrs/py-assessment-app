@@ -1,9 +1,5 @@
 import streamlit as st
-import sys, os
 import streamlit.components.v1 as components
-
-
-# sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
 
 def run():
