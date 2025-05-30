@@ -9,16 +9,16 @@ import markdown
 from pathlib import Path
 
 # Add the project root to the Python path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+# sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
 # Import from local file system instead of Firebase
-from shared.course_loader import (
+from utils.course_loader import (
     get_all_modules,
     get_module_by_id,
     mark_module_completed,
 )
-from shared.markdown_converter import load_and_convert_markdown
-from shared.firebase import get_user_by_id  # Still need this for user data
+from utils.markdown_converter import load_and_convert_markdown
+from utils.firebase import get_user_by_id  # Still need this for user data
 
 # Initialize the session state if not already done
 if "user_id" not in st.session_state:

@@ -70,6 +70,7 @@ def create_user(
             - Message (str)
             - User data if created successfully, None otherwise
     """
+    print("Creating User...")
     if not initialize_firebase():
         return False, "Firebase initialization failed", None
 

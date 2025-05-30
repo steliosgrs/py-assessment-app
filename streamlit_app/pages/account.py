@@ -1,12 +1,9 @@
-import re
 import streamlit as st
-import sys
-import os
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 # Hide default Streamlit navigation
 
-from shared.firebase import (
+from utils.manage_account import register_user
+from utils.firebase import (
     authenticate_user,
     create_user,
     initialize_firebase,
@@ -23,15 +20,6 @@ if not firebase_initialized:
     st.error("Firebase initialization failed. Please check your credentials.")
 
 
-# Function to validate email format
-def is_valid_email(email):
-    """
-    Validate email format.
-    """
-    pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-    return re.match(pattern, email) is not None
-
-
 # Function to log in a user
 def login_user(email, password):
     """
@@ -42,41 +30,6 @@ def login_user(email, password):
     if success and user:
         st.session_state.user_id = user.get("uid")
         st.success(message)
-        # Refresh the page to show the logged-in state
-        st.rerun()
-    else:
-        st.error(message)
-
-
-# Function to register a new user
-def register_user(display_name, email, password, confirm_password):
-    """
-    Register a new user with Firebase.
-    """
-    # Validate input
-    if not display_name or not email or not password or not confirm_password:
-        st.error("Please fill in all fields.")
-        return
-
-    if password != confirm_password:
-        st.error("Passwords do not match.")
-        return
-
-    if not is_valid_email(email):
-        st.error("Please enter a valid email address.")
-        return
-
-    if len(password) < 6:  # Firebase requires at least 6 characters
-        st.error("Password must be at least 6 characters long.")
-        return
-
-    # Create user
-    success, message, user = create_user(email, password, display_name)
-
-    if success:
-        st.success(message)
-        # Set session state to log the user in
-        st.session_state.user_id = user.get("uid")
         # Refresh the page to show the logged-in state
         st.rerun()
     else:
