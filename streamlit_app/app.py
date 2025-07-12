@@ -8,7 +8,7 @@ from pages import home, account, modules, exercises, about
 
 
 def main():
-    # TEST
+
     with st.sidebar:
         app = "Home"
         app = option_menu(
