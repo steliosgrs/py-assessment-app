@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "py-assessment-app"
+version = "0.1.0"
+description = "A Streamlit app for Python assessment application."
+authors = [
+    { name = "Stelios Georgaras", email = "steliosgp13@gmail.com" }
+]
+readme = "README.md"
+requires-python = ">=3.11"
+
+dependencies = [
+    "streamlit>=1.45.1",
+    "streamlit-option-menu==0.4.0",
+    "firebase-admin==6.3.0",
+    "python-dotenv==1.0.1",
+    "pytest==7.4.0",
+    "markdown==3.5.1",
+    "google-cloud-firestore==2.20.2",
+    "pydantic==2.11.5",
+    "pydantic_core==2.33.2",
+    "pydantic[email]",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["streamlit_app*", "shared*"]
