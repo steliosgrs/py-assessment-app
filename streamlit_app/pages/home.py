@@ -1,13 +1,12 @@
 import streamlit as st
-import sys, os
 from pages.account import is_authenticated, get_current_user, logout
-from shared.course_loader import (
+from utils.course_loader import (
     get_all_modules,
     get_module_by_id,
     mark_module_completed,
 )
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+# sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
 
 def run():
