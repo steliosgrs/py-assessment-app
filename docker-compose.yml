@@ -1,19 +1,15 @@
 services:
-  # Streamlit application with Firebase
-  streamlit:
-    build:
-      context: .
-      dockerfile: streamlit_app/Dockerfile
-    ports:
-      - "8501:8501"
+  mongodb:
+    image: mongo:latest
+    restart: always
     environment:
-      - SECRET_KEY=your-production-secret-key-change-this
-      - FIREBASE_CREDENTIALS=firebase-credentials.json
-      - FIREBASE_STORAGE_BUCKET=your-firebase-project.appspot.com
-      - FIREBASE_API_KEY=your-firebase-api-key
-      # Optional: instead of mounting the credentials file, you can pass the JSON as an env var
-      # - FIREBASE_CREDENTIALS_JSON={"type":"service_account","project_id":"your-project-id",...}
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: pass
+      MONGO_INITDB_DATABASE: python_learning_dev
+    ports:
+      - "27017:27017"
     volumes:
-      - ./storage:/app/storage
-      - ./firebase-credentials.json:/app/firebase-credentials.json:ro
-      # The credentials file should be outside of version control
+      - mongodb_data:/data/db
+
+volumes:
+  mongodb_data:

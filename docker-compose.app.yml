@@ -1,0 +1,19 @@
+services:
+  # Streamlit application with Firebase
+  streamlit:
+    build:
+      context: .
+      dockerfile: streamlit_app/Dockerfile
+    ports:
+      - "8501:8501"
+    environment:
+      - SECRET_KEY=your-production-secret-key-change-this
+      - FIREBASE_CREDENTIALS=firebase-credentials.json
+      - FIREBASE_STORAGE_BUCKET=your-firebase-project.appspot.com
+      - FIREBASE_API_KEY=your-firebase-api-key
+      # Optional: instead of mounting the credentials file, you can pass the JSON as an env var
+      # - FIREBASE_CREDENTIALS_JSON={"type":"service_account","project_id":"your-project-id",...}
+    volumes:
+      - ./storage:/app/storage
+      - ./firebase-credentials.json:/app/firebase-credentials.json:ro
+      # The credentials file should be outside of version control
