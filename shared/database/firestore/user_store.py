@@ -2,6 +2,7 @@
 Firestore implementation of user repository
 """
 
+from typing import Any, Dict
 from shared.database.repositories.user_repository import IUserRepository
 
 

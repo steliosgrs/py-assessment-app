@@ -107,6 +107,6 @@ def run():
     with col1:
         if st.button("Login"):
             st.switch_page("pages/login.py")
-    with col2:
-        if st.button("Register"):
-            st.switch_page("pages/register.py")
+    # with col2:
+    #     if st.button("Register"):
+    #         st.switch_page("pages/register.py")

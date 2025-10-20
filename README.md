@@ -79,7 +79,7 @@ For local development without Docker:
 Start the application using Docker Compose:
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 #### Development Server
@@ -87,6 +87,10 @@ docker-compose up -d
 Access the Streamlit application:
 
 - Open your browser and navigate to `http://localhost:8501`
+
+Access the MongoDB server (if using MongoDB):
+
+- MongoDB Compass or any MongoDB client can connect to `http://localhost:8080/`
 
 ## Security Considerations
 
@@ -104,3 +108,99 @@ Access the Streamlit application:
 - Add email verification
 - Implement user roles and permissions
 - Add more Firebase features like Firestore for storing application data
+
+## New Structure
+
+Following the Repository Pattern, the project structure has been updated to:
+
+```
+/project_root/
+├── shared/
+│   ├── __init__.py
+│   ├── config.py                      # Configuration settings
+│   │
+│   ├── database/                      # NEW: Database layer
+│   │   ├── __init__.py               # Exports repositories based on ENV
+│   │   │
+│   │   ├── repositories/             # Repository interfaces (contracts)
+│   │   │   ├── __init__.py
+│   │   │   ├── user_repository.py    # IUserRepository (abstract)
+│   │   │   ├── module_repository.py  # IModuleRepository (abstract)
+│   │   │   └── exercise_repository.py # IExerciseRepository (abstract)
+│   │   │
+│   │   ├── firestore/                # Firestore implementations
+│   │   │   ├── __init__.py
+│   │   │   ├── connection.py         # Firestore client setup
+│   │   │   ├── user_store.py         # FirestoreUserStore
+│   │   │   ├── module_store.py       # FirestoreModuleStore
+│   │   │   └── exercise_store.py     # FirestoreExerciseStore
+│   │   │
+│   │   └── mongodb/                  # MongoDB implementations
+│   │       ├── __init__.py
+│   │       ├── connection.py         # MongoDB client setup
+│   │       ├── user_store.py         # MongoUserStore
+│   │       ├── module_store.py       # MongoModuleStore
+│   │       └── exercise_store.py     # MongoExerciseStore
+│   │
+│   ├── course_loader.py              # MODIFIED: Now uses repositories
+│   ├── exercise_runner.py            # Testing utilities (unchanged)
+│   └── markdown_converter.py         # Markdown utilities (unchanged)
+│
+├── streamlit_app/
+│   ├── __init__.py
+│   ├── app.py                        # MODIFIED: Uses repository layer
+│   └── pages/
+│       ├── __init__.py
+│       ├── login.py                  # MODIFIED: Uses UserRepository
+│       ├── register.py               # MODIFIED: Uses UserRepository
+│       ├── modules.py                # MODIFIED: Uses ModuleRepository
+│       └── exercises.py              # MODIFIED: Uses ExerciseRepository
+│
+├── docker-compose.yml                # UPDATED: Adds MongoDB service
+├── requirements.txt                  # UPDATED: Adds pymongo
+└── .env                              # ENV variables (DATABASE=firestore|mongodb)
+```
+
+### Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Streamlit Application                     │
+│                  (app.py, pages/*.py)                        │
+└──────────────────────┬──────────────────────────────────────┘
+                       │
+                       │ Uses repositories via interface
+                       ↓
+┌─────────────────────────────────────────────────────────────┐
+│              Repository Layer (Interfaces)                   │
+│    IUserRepository | IModuleRepository | IExerciseRepository│
+└──────────────────────┬──────────────────────────────────────┘
+                       │
+        ┌──────────────┴──────────────┐
+        │                             │
+        ↓                             ↓
+┌──────────────────┐         ┌──────────────────┐
+│ Firestore Stores │         │  MongoDB Stores  │
+│  (Production)    │         │  (Development)   │
+└─────────┬────────┘         └────────┬─────────┘
+          │                           │
+          ↓                           ↓
+    [Firebase Cloud]            [MongoDB Container]
+```
+
+## Environment Variables
+
+```
+# Development
+DATABASE=mongodb
+MONGODB_URI=mongodb://localhost:27017
+MONGODB_NAME=python_learning_dev
+
+# Production
+DATABASE=firestore
+FIREBASE_CREDENTIALS=firebase-credentials.json
+FIREBASE_API_KEY=your-api-key
+
+```
+
+https://github.com/haohanyang/compass-web
